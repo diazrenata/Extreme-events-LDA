@@ -11,7 +11,7 @@
 
 library(topicmodels)
 library(RCurl)
-library(multipanelfigure)
+# library(multipanelfigure) cannot install this package - issue with 'gridGraphics' package (dependency).
 library(reshape2)
 
 

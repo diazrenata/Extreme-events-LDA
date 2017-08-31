@@ -1,0 +1,11 @@
+# Renata planning
+
+* Based on Erica's repository, run a similar LDA and changepoint analysis on the exclosure plots.
+* Load data using portalr package
+  * For this, need to deviate from rodent_data_for_LDA script
+
+## What the exisitng data does and how to change it...
+### rodent_data_for_LDA.R
+Notably - looks at how many across *all* plots. so it's not 8 samples per period, it's each period is a sample.
+
+returns a matrix of all the species (columns) and the counts per trapping session. adjusted to extrapolate as if all plots were trapped, for trap sessions when not all the plots were trapped. (/n plots actually trapped, * 8)
