@@ -9,3 +9,8 @@
 Notably - looks at how many across *all* plots. so it's not 8 samples per period, it's each period is a sample.
 
 returns a matrix of all the species (columns) and the counts per trapping session. adjusted to extrapolate as if all plots were trapped, for trap sessions when not all the plots were trapped. (/n plots actually trapped, * 8)
+
+I'm having a hard time using the portalr package to extract exactly the same dataset as Erica did.
+The discrepancy is in knowing a) which plots had which treatments at which trap sessions and b) which plots were trapped at each plot session.
+
+Moving forward, I'm going to pull *longterm exclosure plots data* and then see if I can figure out which plots those are and how many of them were trapped per session.
