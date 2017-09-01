@@ -2,9 +2,8 @@ library(portalr)
 library(dplyr)
 
 
-
 create_rodent_table <- function(period_first, period_last, selected_treatment){
-  rodents = abundance(path = 'repo', level = 'Treatment', type = 'Rodents', length = 'longterm', unknowns= F, incomplete = F, shape = 'flat', time = 'period')
+  #rodents = abundance(path = 'repo', level = 'Treatment', type = 'Rodents', length = 'longterm', unknowns= F, incomplete = F, shape = 'flat', time = 'period')
   
   # question - how many plots were trapped per treatment per period?
   
@@ -36,16 +35,16 @@ create_rodent_table <- function(period_first, period_last, selected_treatment){
   species <- as.vector(unique(species_table[ which(species_table$taxa == 'Rodent'), 'species']))
   rodents = counted.plots
   rodents[,species] <- NA
-  rodents$othercount <- NA
+  #rodents$othercount <- NA
   for (i in 1:nrow(rodents)) {
     for (j in 1:length(species)) {
       this <- filter(rodent_data, period == rodents$period[i] & treatment == rodents$treatment[i])
       rodents[i,species[j]] <- nrow(this[which(this$species == species[j]), ])
-      rodents$othercount[i] <- length(unique(this$plot))
+   #   rodents$othercount[i] <- length(unique(this$plot))
     }
   }
   
-  r.abund = abundance('repo', level = 'Treatment', type = 'Rodents', length = 'longterm', unknowns = F, incomplete = F, shape = 'list')
+ # r.abund = abundance('repo', level = 'Treatment', type = 'Rodents', length = 'longterm', unknowns = F, incomplete = F, shape = 'list')
   
   # rodents should be the same as r.abund
   
@@ -54,12 +53,16 @@ create_rodent_table <- function(period_first, period_last, selected_treatment){
   
   
   # select time period following erica
-  period_first = 1
-  period_last = 436
+  #period_first = 1
+ # period_last = 436
   rodents.ex <- filter(rodents.ex, period >=period_first & period<= period_last)
+  
   
   # round incomplete censuses following erica
   rodents_ex_adjusted = as.data.frame.matrix(rodents.ex)
+  
+  rownames(rodents_ex_adjusted) <- rodents.ex$period
+  
   for (n in 1:nrow(rodents_ex_adjusted)) {
     #divide by number of  plots actually trapped (should be 4) and multiply by 4 to estimate captures as if all plots were trapped
     rodents_ex_adjusted[n,4:30] = round((rodents_ex_adjusted[n,4:30]/rodents_ex_adjusted[n,3])*4)
@@ -67,7 +70,15 @@ create_rodent_table <- function(period_first, period_last, selected_treatment){
   
   rodents_ex_adjusted <- rodents_ex_adjusted[, c('BA','DM','DO','DS','NA','OL','OT','PB','PE','PF','PH','PI','PL','PM','PP','RF','RM','RO','SF','SH','SO')]
   
-  return(rodents_ex_adjusted)
+  
+  # dates to go with count data
+
+
+  period_dates = filter(newmoons_table,period %in% rownames(rodents_ex_adjusted)) %>% select(period,censusdate)
+  dates = period_dates$censusdate
+  
+  outs <- list(rodents_ex_adjusted, dates)
+  return(outs)
 }
 
 # rodents <- create_rodent_table(1, 436, 'exclosure')
