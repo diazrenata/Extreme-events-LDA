@@ -15,7 +15,8 @@ library(RCurl)
 library(reshape2)
 
 
-source('rodent_data_for_LDA.r')
+#source('rodent_data_for_LDA.r')
+source('rodent_data_from_portalr.R')
 source('AIC_model_selection.R')
 source('LDA_figure_scripts.R')
 source('changepointmodel.r')
@@ -24,19 +25,15 @@ source('LDA-distance.R')
 # ===================================================================
 # 1. prepare rodent data
 # ===================================================================
-dat = create_rodent_table(period_first = 1,
-                          period_last = 436,
-                          selected_plots = c(2,4,8,11,12,14,17,22),
-                          selected_species = c('BA','DM','DO','DS','NA','OL','OT','PB','PE','PF','PH','PI','PL','PM','PP','RF','RM','RO','SF','SH','SO'))
+# dat = create_rodent_table(period_first = 1,
+#                           period_last = 436,
+#                           selected_plots = c(2,4,8,11,12,14,17,22),
+#                           selected_species = c('BA','DM','DO','DS','NA','OL','OT','PB','PE','PF','PH','PI','PL','PM','PP','RF','RM','RO','SF','SH','SO'))
 
-# dates to go with count data
-moondat = read.csv(text=getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/moon_dates.csv"),stringsAsFactors = F)
-moondat$date = as.Date(moondat$CensusDate)
+receive <- create_rodent_table(1, 436, 'exclosure')
 
-period_dates = filter(moondat,Period %in% rownames(dat)) %>% select(Period,date)
-dates = period_dates$date
-
-
+dat <- receive[[1]]
+dates <- receive[[2]]
 # ==================================================================
 # 2a. select number of topics
 # ==================================================================
