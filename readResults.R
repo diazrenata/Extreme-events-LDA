@@ -23,4 +23,5 @@ df_2 <- everything[[19]]
 df_3 <- everything[[20]]
 df_4 <- everything[[21]]
 df_5 <- everything[[22]]
+dates <- everything[[23]]
 rm(everything)

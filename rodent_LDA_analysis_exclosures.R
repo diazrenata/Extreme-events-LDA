@@ -165,8 +165,10 @@ df_5$value = year_continuous[df_5$value]
 # saving inputs and results because this took a couple of days to run 
 saveThese = list(dat, seeds, best_ntopic, seeds_3topics, best_seed, mean_dist, max_dist, ntopics, SEED, 
                  ldamodel, year_continuous, x, cp_results_rodent, cp_results_rodent2, cp_results_rodent3,
-                 cp_results_rodent4, cp_results_rodent5, df_1, df_2, df_3, df_4, df_5)
+                 cp_results_rodent4, cp_results_rodent5, df_1, df_2, df_3, df_4, df_5, dates)
 saveRDS(saveThese, 'exclosuresResults.rds')
+
+source('readResults.R')
 
 # find 95% confidence intervals on each changepoint:
 quantile(df_3[df_3$variable=='V1','value'],probs=c(.025,.975)) %>% date_decimal() %>% format('%d-%m-%Y')
@@ -219,7 +221,8 @@ plot_community_composition(composition,c(3,1,2))
 
 
 # community composition with grassland communities highlighted
-P = plot_community_composition_gg(composition,c(3,4,1,2),ylim=c(0,.8))
+P = plot_community_composition_gg(composition,c(3,1,2),ylim=c(0,1))
+P
 
 (figure_spcomp <- multi_panel_figure(
   width = c(70,70,70,70),
