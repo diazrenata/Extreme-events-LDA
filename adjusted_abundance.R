@@ -2,7 +2,7 @@ library(portalr)
 library(dplyr)
 library(plyr)
 
-adjusted_abundance <- function(period_first, period_last, selected_treatment, length){
+adjusted_abundance <- function(period_first, period_last, selected_treatment, length, dates){
 
   portalData = loadData('repo')
   rodent_data = portalData[[1]]
@@ -66,7 +66,16 @@ adjusted_abundance <- function(period_first, period_last, selected_treatment, le
   }
 
 
+  if (dates == TRUE) {
+dates <- newmoons_table[,c('period', 'censusdate')]
+dates <- filter(dates, period %in% (as.vector(unique(rodents.treatment$period))))    
+censusdates <- as.vector(dates[,'censusdate'])
+
+rod.table.adj <- cbind(rod.table.adj, censusdates)
+  }
   return(rod.table.adj)
 }
 
-# rodents <- create_rodent_table(1, 436, 'exclosure', 'longterm')
+
+
+# rodents <- create_rodent_table(1, 436, 'exclosure', 'longterm', TRUE)
