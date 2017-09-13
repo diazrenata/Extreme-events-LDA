@@ -2,7 +2,7 @@
 
 library(topicmodels)
 library(dplyr)
-
+library(purrr)
 
 #' AIC model selection for LDA using VEM method
 #' 
