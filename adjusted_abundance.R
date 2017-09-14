@@ -1,6 +1,5 @@
 library(portalr)
 library(dplyr)
-library(plyr)
 
 adjusted_abundance <- function(period_first, period_last, selected_treatment, length, dates){
 
@@ -15,9 +14,9 @@ adjusted_abundance <- function(period_first, period_last, selected_treatment, le
 
   rodents <- filter(rodents, period >= period_first, period <= period_last)
 
-  plots_trapped_treatment <- join(trapping_table, plots_table, by = c('year', 'month', 'plot'), type = 'left')
+  plots_trapped_treatment <- left_join(trapping_table, plots_table, by = c('year', 'month', 'plot'))
 
-  rodents <- join(rodents, plots_trapped_treatment, by = c('period', 'plot'), type = 'left')
+  rodents <- left_join(rodents, plots_trapped_treatment, by = c('period', 'plot'))
 
   rodents.treatment <- filter(rodents, treatment == selected_treatment)
 
@@ -55,9 +54,13 @@ adjusted_abundance <- function(period_first, period_last, selected_treatment, le
 
   rod.table.adj <- rod.table
 
+  # save the not adjusted one
+  write.csv(rod.table.adj, 'rodents.table.noadj.csv')
+  
   ### better way to guess how many plots of x treatment there 'should' be?
   usual.n <- ceiling(mean(as.numeric(rod.table.adj[,'nsampled'])))
 
+  
   for (n in 1:nrow(rod.table.adj)) {
     # this rounding method follows Erica's 
     for (i in 4:24){
@@ -65,7 +68,8 @@ adjusted_abundance <- function(period_first, period_last, selected_treatment, le
     }
   }
 
-
+write.csv(rod.table.adj, 'rodents.table.adj.csv')
+  
   if (dates == TRUE) {
 dates <- newmoons_table[,c('period', 'censusdate')]
 dates <- filter(dates, period %in% (as.vector(unique(rodents.treatment$period))))    
