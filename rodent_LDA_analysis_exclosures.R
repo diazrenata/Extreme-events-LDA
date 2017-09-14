@@ -11,13 +11,15 @@
 
 library(topicmodels)
 library(RCurl)
-# library(multipanelfigure) cannot install this package - issue with 'gridGraphics' (dependency).
+library(multipanelfigure) 
 library(reshape2)
 library(portalr)
 library(dplyr)
 library(tidyr)
 #source('rodent_data_for_LDA.r')
 source('RodentAbundancesAdjustable.R')
+# try this
+# source('/Users/renatadiaz/Documents/GitHub/portalr/R/RodentAbundancesAdjustable.R') # not sure how to source the thing I added to portalr
 source('AIC_model_selection.R')
 source('LDA_figure_scripts.R')
 source('changepointmodel.r')
@@ -30,36 +32,6 @@ source('readResults.R')
 # ===================================================================
 # 1. prepare rodent data
 # ===================================================================
-# dat = create_rodent_table(period_first = 1,
-#                           period_last = 436,
-#                           selected_plots = c(2,4,8,11,12,14,17,22),
-#                           selected_species = c('BA','DM','DO','DS','NA','OL','OT','PB','PE','PF','PH','PI','PL','PM','PP','RF','RM','RO','SF','SH','SO'))
-
-<<<<<<< HEAD
-dat.full <- adjusted_abundance(period_first = 1,
-                          period_last = 436, 
-                          selected_treatment = 'exclosure',
-                          length = 'longterm',
-                          dates = TRUE)
-
-
-
-
-
-dates <- dat.full[,'censusdates']
-dates <- as.Date(dates)
-dat <- dat.full[,c(4:24)]
-splist <- colnames(dat.full)[4:24]
-periods <- dat.full[,'period']
-
-datdims <- dim(dat)
-
-datint <- as.integer(dat)
-
-dat <- matrix(data = datint, nrow = datdims[1], ncol = datdims[2], dimnames = list(periods, splist))
-
-=======
->>>>>>> 7e3ddbeb7b00425870a3aceb380e62d1ccc95a8c
 
 dat.full <- abundance.adjustable(path = 'repo', level="treatment.adj",type="Rodents",
                                              length="longterm",unknowns=F,incomplete=T,
@@ -100,8 +72,7 @@ best_ntopic = repeat_VEM(dat,
                          topic_max=6)
 
 # histogram of how many seeds chose how many topics
-hist(best_ntopic$k,breaks=c(0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5),xlab='best # of topics', main='')
-
+hist(best_ntopic$k,breaks=c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5),xlab='best # of topics', main='')
 
 # with exclosures, 3 topics wins by far. 
 
@@ -118,7 +89,7 @@ seeds_3topics = best_ntopic %>%
 
 # choose seed with highest log likelihood for all following analyses
 #    (also produces plot of community composition for 'best' run compared to 'worst')
-best_seed = calculate_LDA_distance(dat,seeds_3topics)
+best_seed = calculate_LDA_distance(dat,seeds_3topics, 3)
 mean_dist = unlist(best_seed)[2]
 max_dist = unlist(best_seed)[3]
 

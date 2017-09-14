@@ -54,7 +54,7 @@ abundance.adjustable <- function(path = '~', level="Site",type="Rodents",
       dplyr::ungroup() %>%
       dplyr::select(period,treatment,species=x.Var1, abundance=x.Freq)
   }
-  ##########Summarise by treatment adjusted ----------------------------
+  ##########Summarise by treatment, adjusted by how many plots were trapped that session ----------------------------
 
   if(level %in% c("Treatment.adj","treatment.adj")){
     #Name plot treatments in each time period
@@ -78,6 +78,18 @@ abundance.adjustable <- function(path = '~', level="Site",type="Rodents",
       dplyr::select(period,treatment,species=x.Var1, abundance=x.Freq) %>%
       dplyr::left_join(plot.treatments.trapped, by = c('period', 'treatment')) %>%
       dplyr::mutate(abundance.perplot = abundance / n)
+
+    # Potential to go ahead and multiply by how many plots are *usually* trapped of that treatment
+    # usual.trapping = plot.treatments.trapped %>%
+    #   select(treatment, n) %>%
+    #   group_by(treatment) %>%
+    #   summarize(usual.n = ceiling(mean(n))) %>%
+    #   ungroup()
+    #
+    # abundances = abundances %>%
+    #   left_join(usual.trapping, by = 'treatment') %>%
+    #   mutate(abundance.adj = round(abundance.perplot * usual.n)) %>%
+    #   select()
 
   }
   ##########Add census dates (might be redundant?)
