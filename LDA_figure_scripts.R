@@ -188,7 +188,7 @@ plot_community_composition = function(composition,topic_order=1:dim(composition)
 #' 
 #' 
 #' 
-plot_community_composition_gg = function(composition,topic_order,ylim) {
+plot_community_composition_gg = function(composition,topic_order,ylim, grassland) {
   topics = dim(composition)[1]
   community = c()
   for (j in 1:topics) {community=append(community,rep(j,length(composition[j,])))}
@@ -197,14 +197,16 @@ plot_community_composition_gg = function(composition,topic_order,ylim) {
   species=c()
   for (j in 1:topics) {species=append(species,colnames(composition))}
   comp = data.frame(community = community,relabund=relabund,species=factor(species, levels = colnames(composition)))
-  grass = filter(comp,species %in% c('BA','PH','DO','DS','PF','PL','PM','RF','RO','RM','SH','SF','SO'))
+ 
+  if (grassland == TRUE) {
+   grass = filter(comp,species %in% c('BA','PH','DO','DS','PF','PL','PM','RF','RO','RM','SH','SF','SO'))
   p = list()
   j = 1
-  for (i in topic_order) {
+  for (i in 1:length(topic_order)) {
     if (j == 1) {ylabel='% Composition'} else {ylabel=''}
     x <- ggplot(data=comp[comp$community==i,], aes(x=species, y=relabund)) +
       geom_bar(stat='identity',fill=cbPalette[i])  +
-      geom_bar(data=grass[grass$community==i,],aes(x=species,y=relabund),fill=cbPalette[i],stat='identity',alpha=0,size=1,color='black') +
+      geom_bar(data=grass[grass$community==topic_order[i],],aes(x=species,y=relabund),fill=cbPalette[topic_order[i]],stat='identity',alpha=0,size=1,color='black') +
         theme(axis.text=element_text(size=10),
               panel.background = element_blank(),
               panel.border=element_rect(colour='black',fill=NA),
@@ -220,7 +222,34 @@ plot_community_composition_gg = function(composition,topic_order,ylim) {
     p[[j]] <- x
     j=j+1
   }
- 
+  }
+  
+  if (grassland == FALSE) {
+    
+    p = list()
+    j = 1
+    for (i in 1:length(topic_order)) {
+      if (j == 1) {ylabel='% Composition'} else {ylabel=''}
+      x <- ggplot(data=comp[comp$community==topic_order[i],], aes(x=species, y=relabund)) +
+        geom_bar(stat='identity',fill=cbPalette[topic_order[i]])  +
+        theme(axis.text=element_text(size=10),
+              panel.background = element_blank(),
+              panel.border=element_rect(colour='black',fill=NA),
+              axis.text.x = element_text(angle = 90,hjust=0,vjust=.5),
+              plot.margin = unit(c(0,1,0,0),"mm"),
+              axis.text.y = element_text(angle=90,size=9,vjust=.5,hjust=.5),
+              plot.title = element_text(hjust = 0.5)) +
+        scale_x_discrete(name='') +
+        scale_y_continuous(name=ylabel,limits = ylim) +
+        geom_hline(yintercept = 0)  +
+        ggtitle(paste('Community',j))
+      
+      p[[j]] <- x
+      j=j+1
+    }
+  }
+  
+  
   return(p)
 }
 

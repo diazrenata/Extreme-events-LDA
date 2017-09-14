@@ -11,7 +11,7 @@
 
 library(topicmodels)
 library(RCurl)
-# library(multipanelfigure) cannot install this package - issue with 'gridGraphics' package (dependency).
+# library(multipanelfigure) cannot install this package - issue with 'gridGraphics' (dependency).
 library(reshape2)
 
 
@@ -21,6 +21,10 @@ source('AIC_model_selection.R')
 source('LDA_figure_scripts.R')
 source('changepointmodel.r')
 source('LDA-distance.R')
+
+
+# to skip running the changepoint and just load results
+source('readResults.R')
 
 # ===================================================================
 # 1. prepare rodent data
@@ -35,6 +39,8 @@ dat.full <- adjusted_abundance(period_first = 1,
                           selected_treatment = 'exclosure',
                           length = 'longterm',
                           dates = TRUE)
+
+
 
 
 
@@ -217,36 +223,35 @@ mean(cp_results_rodent5$saved_lls * -2)+ 2*(3*(ntopics-1)*(5+1)+(5))
 beta1 = community_composition(ldamodel)
 # put columns in order of largest species to smallest
 composition = beta1[,c('NA','DS','SH','SF','SO','DO','DM','PB','PH','OL','OT','PL','PM','PE','PP','PI','RF','RM','RO','BA','PF')]
-plot_community_composition(composition,c(3,1,2))
+comp_plots = plot_community_composition_gg(composition,c(3,1,2), ylim=c(0,1), grassland = FALSE)
 
 
 # community composition with grassland communities highlighted
-P = plot_community_composition_gg(composition,c(3,1,2),ylim=c(0,1))
-P
+comp_plots_grassland = plot_community_composition_gg(composition,c(3,1,2),ylim=c(0,1), grassland = TRUE)
 
-(figure_spcomp <- multi_panel_figure(
-  width = c(70,70,70,70),
-  height = c(70,10),
-  panel_label_type = "none",
-  column_spacing = 0))
-figure_spcomp %<>% fill_panel(
-  P[[1]],
-  row = 1, column = 1)
-figure_spcomp %<>% fill_panel(
-  P[[2]],
-  row = 1, column = 2)
-figure_spcomp %<>% fill_panel(
-  P[[3]],
-  row = 1, column = 3)
-figure_spcomp %<>% fill_panel(
-  P[[4]],
-  row = 1, column = 4)
-figure_spcomp
 
+for (i in 1:3) {
+setEPS()
+postscript(paste0("exclosure_community", i, ".eps"))
+print(comp_plots[[i]])
+dev.off()
+
+setEPS()
+postscript(paste0("exclosure_community", i, "_grassland.eps"))
+print(comp_plots_grassland[[i]])
+dev.off()
+
+}
+
+together <- plot_grid(plotlist = comp_plots, align = "v", axis = 'l', nrow = 3, ncol = 1)
+setEPS()
+postscript("exclosure_community_all.eps")
+print(together)
+dev.off()
 
 # plot of component communities over time
 cc = plot_component_communities(ldamodel,ntopics,dates)
-
+cc
 
 # changepoint histogram w 3 cpts
 H_3 = ggplot(data = df_3, aes(x=value)) +
