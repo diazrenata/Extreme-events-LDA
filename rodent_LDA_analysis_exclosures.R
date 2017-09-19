@@ -52,11 +52,19 @@ dat = dat.full %>%
   select(species, period, abundance.adj, censusdate) %>% 
   spread(species, abundance.adj) 
 
+
 dates = select(dat, censusdate)
 dates = as.Date(dates$censusdate)
 
-dat = dat[,3:23]
+dates.periods = select(dat, censusdate, period)
+dates.periods$censusdate = as.Date(dates.periods$censusdate)
 
+
+dat = dat[,3:23]
+write.csv(dat, 'exclosures_dat.csv', row.names = FALSE)
+
+
+write.csv(dates.periods, 'exclosures_dates.csv', row.names = FALSE)
 # ==================================================================
 # 2a. select number of topics
 # ==================================================================
@@ -176,23 +184,21 @@ mean(cp_results_rodent4$saved_lls * -2)+ 2*(3*(ntopics-1)*(4+1)+(4))
 mean(cp_results_rodent5$saved_lls * -2)+ 2*(3*(ntopics-1)*(5+1)+(5))
 
 # lowest deviance w/3 change points
-# 
 # > mean(cp_results_rodent$saved_lls * -2) + 2*(3*(ntopics-1)*(1+1)+(1))
-# [1] 701.6821
+# [1] 701.7584
 # > mean(cp_results_rodent2$saved_lls * -2)+ 2*(3*(ntopics-1)*(2+1)+(2))
-# [1] 669.0291
+# [1] 671.2621
 # > mean(cp_results_rodent3$saved_lls * -2)+ 2*(3*(ntopics-1)*(3+1)+(3))
-# [1] 660.7828
+# [1] 662.1949
 # > mean(cp_results_rodent4$saved_lls * -2)+ 2*(3*(ntopics-1)*(4+1)+(4))
-# [1] 663.2277
+# [1] 664.2978
 # > mean(cp_results_rodent5$saved_lls * -2)+ 2*(3*(ntopics-1)*(5+1)+(5))
-# [1] 667.4037
-# > 
+# [1] 666.7015
 
 # =================================================================
 # 5. figures
 # =================================================================
-
+library(cowplot)
 # plot community compositions
 beta1 = community_composition(ldamodel)
 # put columns in order of largest species to smallest
@@ -223,15 +229,38 @@ postscript("exclosure_community_all.eps")
 print(together)
 dev.off()
 
+
+
+(spcomp3= multi_panel_figure(
+  width = c(70,70,70),
+  height = c(70,10),
+  panel_label_type = "none",
+  column_spacing = 0))
+spcomp3 %<>% fill_panel(
+  comp_plots[[1]],
+  row = 1, column = 1)
+spcomp3 %<>% fill_panel(
+  comp_plots[[2]],
+  row = 1, column = 2)
+spcomp3 %<>% fill_panel(
+  comp_plots[[3]],
+  row = 1, column = 3)
+spcomp3
+
 # plot of component communities over time
 cc = plot_component_communities(ldamodel,ntopics,dates)
 cc
 
+setEPS()
+postscript("component_communities_time.eps")
+print(cc)
+dev.off()
+
 # changepoint histogram w 3 cpts
 H_3 = ggplot(data = df_3, aes(x=value)) +
-  geom_histogram(data=subset(df_3,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,fill='black',alpha=.2) +
-  geom_histogram(data=subset(df_3,variable=='V2'),aes(y=..count../sum(..count..)),binwidth = .5,fill='black',alpha=.4) +
-  geom_histogram(data=subset(df_3,variable=='V3'),aes(y=..count../sum(..count..)),binwidth = .5,fill='black',alpha=.6) +
+  geom_histogram(data=subset(df_3,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,fill='grey') + #,alpha=.2) +
+  geom_histogram(data=subset(df_3,variable=='V2'),aes(y=..count../sum(..count..)),binwidth = .5,fill='darkgrey') + #,alpha=.4) +
+  geom_histogram(data=subset(df_3,variable=='V3'),aes(y=..count../sum(..count..)),binwidth = .5,fill='black') + #,alpha=.6) +
   labs(x='',y='') +
   xlim(range(year_continuous)) +
   scale_y_continuous(labels=c('0.00','0.20','0.40','0.60','0.80'),breaks = c(0,.2,.4,.6,.8)) +
@@ -239,36 +268,49 @@ H_3 = ggplot(data = df_3, aes(x=value)) +
         panel.border=element_rect(colour='black',fill=NA),
         panel.background = element_blank(),
         panel.grid.major = element_line(colour='grey90'),
-        panel.grid.minor = element_line(colour='grey90')) 
-  #theme_bw()
+        panel.grid.minor = element_line(colour='grey90'))+  
+  theme_bw()
 H_3
+
+setEPS()
+postscript("changepoint_histogram.eps")
+print(H_3)
+dev.off()
 
  
 # changepoint model plot
 cpts = find_changepoint_location(cp_results_rodent3)
 cpt_plot = get_ll_non_memoized_plot(ldamodel,x,cpts,make_plot=T,weights=rep(1,length(year_continuous)))
 
+setEPS()
+postscript('changepoint_plot.eps')
+print(cpt_plot)
+dev.off()
+
 cpt_plot
 # Figure 3 -- community composition, LDA model, changepoint histogram, changepoint timeseries
-# multi_panel_figure not available for this r version....look for workaround
 (figure <- multi_panel_figure(
   width = c(70,70,70,70),
   height = c(60,60,60,60),
   column_spacing = 0))
 figure %<>% fill_panel(
-  figure_spcomp,
+  spcomp3,
   row = 1, column = 1:4)
 figure %<>% fill_panel(
   cc,
   row = 2, column = 1:4)
 figure %<>% fill_panel(
-  H_4,
+  H_3,
   row = 3, column = 1:4)
 figure %<>% fill_panel(
   cpt_plot,
   row = 4, column = 1:4)
 figure
 
+setEPS()
+postscript('figure3_exclosures.eps', width = 12, height = 12)
+print(figure)
+dev.off()
 
 # ===================================================================
 # 6. appendix: LDA with 3 and 5 topics
