@@ -312,6 +312,109 @@ postscript('figure3_exclosures.eps', width = 12, height = 12)
 print(figure)
 dev.off()
 
+
+## saving pdfs
+
+for (i in 1:3) {
+  pdf(paste0("exclosure_community", i, ".pdf"))
+  print(comp_plots[[i]])
+  dev.off()
+  
+  pdf(paste0("exclosure_community", i, "_grassland.pdf"))
+  print(comp_plots_grassland[[i]])
+  dev.off()
+  
+}
+
+together <- plot_grid(plotlist = comp_plots, align = "v", axis = 'l', nrow = 3, ncol = 1)
+pdf("exclosure_community_all.pdf")
+print(together)
+dev.off()
+
+
+
+(spcomp3= multi_panel_figure(
+  width = c(70,70,70),
+  height = c(70,10),
+  panel_label_type = "none",
+  column_spacing = 0))
+spcomp3 %<>% fill_panel(
+  comp_plots[[1]],
+  row = 1, column = 1)
+spcomp3 %<>% fill_panel(
+  comp_plots[[2]],
+  row = 1, column = 2)
+spcomp3 %<>% fill_panel(
+  comp_plots[[3]],
+  row = 1, column = 3)
+spcomp3
+
+# plot of component communities over time
+cc = plot_component_communities(ldamodel,ntopics,dates)
+cc
+
+
+pdf("component_communities_time.pdf")
+print(cc)
+dev.off()
+
+# changepoint histogram w 3 cpts
+H_3 = ggplot(data = df_3, aes(x=value)) +
+  geom_histogram(data=subset(df_3,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,fill='grey') + #,alpha=.2) +
+  geom_histogram(data=subset(df_3,variable=='V2'),aes(y=..count../sum(..count..)),binwidth = .5,fill='darkgrey') + #,alpha=.4) +
+  geom_histogram(data=subset(df_3,variable=='V3'),aes(y=..count../sum(..count..)),binwidth = .5,fill='black') + #,alpha=.6) +
+  labs(x='',y='') +
+  xlim(range(year_continuous)) +
+  scale_y_continuous(labels=c('0.00','0.20','0.40','0.60','0.80'),breaks = c(0,.2,.4,.6,.8)) +
+  theme(axis.text=element_text(size=12),
+        panel.border=element_rect(colour='black',fill=NA),
+        panel.background = element_blank(),
+        panel.grid.major = element_line(colour='grey90'),
+        panel.grid.minor = element_line(colour='grey90'))+  
+  theme_bw()
+H_3
+
+
+pdf("changepoint_histogram.pdf")
+print(H_3)
+dev.off()
+
+
+# changepoint model plot
+cpts = find_changepoint_location(cp_results_rodent3)
+cpt_plot = get_ll_non_memoized_plot(ldamodel,x,cpts,make_plot=T,weights=rep(1,length(year_continuous)))
+
+
+pdf('changepoint_plot.pdf')
+print(cpt_plot)
+dev.off()
+
+cpt_plot
+# Figure 3 -- community composition, LDA model, changepoint histogram, changepoint timeseries
+(figure <- multi_panel_figure(
+  width = c(70,70,70,70),
+  height = c(60,60,60,60),
+  column_spacing = 0))
+figure %<>% fill_panel(
+  spcomp3,
+  row = 1, column = 1:4)
+figure %<>% fill_panel(
+  cc,
+  row = 2, column = 1:4)
+figure %<>% fill_panel(
+  H_3,
+  row = 3, column = 1:4)
+figure %<>% fill_panel(
+  cpt_plot,
+  row = 4, column = 1:4)
+figure
+
+
+pdf('figure3_exclosures.pdf', width = 12, height = 12)
+print(figure)
+dev.off()
+
+
 # ===================================================================
 # 6. appendix: LDA with 3 and 5 topics
 # ===================================================================
@@ -412,8 +515,8 @@ cols = viridis_pal()(5)
 # create dataframes from model outputs
 df_2 = as.data.frame(t(cp_results_rodent2$saved[,1,])) %>% melt()
 df_2$value = year_continuous[df_2$value]
-df_3 = as.data.frame(t(cp_results_rodent3$saved[,1,])) %>% melt()
-df_3$value = year_continuous[df_3$value]
+df_4 = as.data.frame(t(cp_results_rodent4$saved[,1,])) %>% melt()
+df_4$value = year_continuous[df_4$value]
 df_5 = as.data.frame(t(cp_results_rodent5$saved[,1,])) %>% melt()
 df_5$value = year_continuous[df_5$value]
 
@@ -445,11 +548,11 @@ H_3 = ggplot(data = df_3, aes(x=value)) +
   xlim(range(year_continuous))
 H_3
 
-H_4b = ggplot(data = df_4, aes(x=value)) +
-  geom_histogram(data=subset(df_4,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,fill=cols[1],alpha=.5) +
-  geom_histogram(data=subset(df_4,variable=='V3'),aes(y=..count../sum(..count..)),binwidth = .5,fill=cols[2],alpha=.5) +
-  geom_histogram(data=subset(df_4,variable=='V4'),aes(y=..count../sum(..count..)),binwidth = .5,fill=cols[3],alpha=.5) +
-  geom_histogram(data=subset(df_4,variable=='V2'),aes(y=..count../sum(..count..)),binwidth = .5,fill=cols[4],alpha=.5) +
+H_4 = ggplot(data = df_4, aes(x=value)) +
+  geom_histogram(data=subset(df_4,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,alpha=.5) +
+  geom_histogram(data=subset(df_4,variable=='V3'),aes(y=..count../sum(..count..)),binwidth = .5,alpha=.5) +
+  geom_histogram(data=subset(df_4,variable=='V4'),aes(y=..count../sum(..count..)),binwidth = .5,alpha=.5) +
+  geom_histogram(data=subset(df_4,variable=='V2'),aes(y=..count../sum(..count..)),binwidth = .5,alpha=.5) +
   labs(x='',y='') +
   xlim(range(year_continuous)) +
   scale_y_continuous(labels=c('0.00','0.20','0.40','0.60','0.80'),breaks = c(0,.2,.4,.6,.8)) +
@@ -458,7 +561,7 @@ H_4b = ggplot(data = df_4, aes(x=value)) +
         panel.background = element_blank(),
         panel.grid.major = element_line(colour='grey90'),
         panel.grid.minor = element_line(colour='grey90')) 
-H_4b
+H_4
 
 H_5 = ggplot(data = df_5, aes(x=value)) +
   geom_histogram(data=subset(df_5,variable=='V1'),aes(y=..count../sum(..count..)),binwidth = .5,fill=cols[1],alpha=.5) +
